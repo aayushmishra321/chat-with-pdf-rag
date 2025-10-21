@@ -1,32 +1,172 @@
-# Chat With PDF (RAG) 📄🤖
+# DocuMind
 
-A full-featured Retrieval-Augmented Generation (RAG) application built with **Python**, **LangChain**, **FAISS**, **OpenAI**, and **Streamlit** that enables conversational interactions with multiple PDF documents simultaneously.
+A production-grade Retrieval-Augmented Generation (RAG) application for conversational document analysis. Built with LangChain, FAISS, and Streamlit. Supports both OpenAI and Groq API keys with automatic provider detection.
+
+---
+
+## Overview
+
+DocuMind indexes PDF documents into a local FAISS vector store using on-device sentence embeddings and enables multi-turn conversational querying with source attribution. It is designed to work with any standard OpenAI-compatible API key or Groq API key without configuration changes.
+
+---
 
 ## Features
-- **Multi-PDF Processing**: Extract and index content across multiple uploaded PDF files simultaneously.
-- **Semantic Chunking**: Employs `RecursiveCharacterTextSplitter` with tuned overlap to retain semantic boundaries.
-- **In-Memory Vector Search**: Indexes document chunks with high-performance similarity search using `FAISS` and `text-embedding-3-small`.
-- **Conversational Memory**: Rephrases follow-up queries using chat history to ensure retrieval remains context-aware.
-- **Source Transparency**: Provides expandable citations showing exact chunks, document origins, and page numbers.
-- **Interactive UI**: Clean, responsive Streamlit dashboard with real-time indexing and chat streaming.
 
-## System Architecture
-1. **Document Loading**: `pypdf` extracts text and page metadata from uploaded PDFs.
-2. **Chunking**: Text split into 1000-character segments with 200-character overlaps.
-3. **Vector Indexing**: Embedded using OpenAI `text-embedding-3-small` and stored in FAISS.
-4. **History-Aware Retrieval**: Reformulates conversational queries into standalone prompts.
-5. **Generation**: `gpt-4o-mini` synthesizes answers strictly grounded in retrieved chunks.
+- Multi-PDF ingestion with page-level metadata extraction
+- Local sentence embeddings via `all-MiniLM-L6-v2` — no embedding API costs
+- FAISS in-memory vector index with similarity search
+- History-aware query reformulation for accurate follow-up retrieval
+- Grounded answer generation with source chunk citations
+- Session-based authentication with email and API key validation
+- Chunk distribution analytics: bar chart, scatter plot, and page-level heatmap
+- Automatic provider routing between OpenAI and Groq backends
+- Model selector for Groq with all available chat-capable models
+
+---
+
+## Architecture
+
+```
+PDF Upload
+    |
+    v
+Text Extraction (pypdf, page-level)
+    |
+    v
+Recursive Text Chunking (800 chars, 150 overlap)
+    |
+    v
+Local Embedding (all-MiniLM-L6-v2 via sentence-transformers)
+    |
+    v
+FAISS Vector Index
+    |
+    v
+Query Input
+    |
+    v
+History-Aware Reformulation (if chat history exists)
+    |
+    v
+Similarity Search (top-5 chunks)
+    |
+    v
+Answer Generation (Groq or OpenAI LLM)
+    |
+    v
+Response + Source Citations
+```
+
+---
+
+## Supported API Providers
+
+| Provider | Key Format | Default Model |
+|----------|-----------|---------------|
+| Groq     | `gsk_...` | `qwen/qwen3.6-27b` |
+| OpenAI   | `sk-...`  | `gpt-4o-mini` |
+
+When using Groq, a model selector is displayed in the sidebar with all available chat-capable models.
+
+---
 
 ## Project Structure
-- `src/pdf_loader.py`: PDF text extraction and document parsing
-- `src/vectorstore.py`: Recursive chunking and FAISS vector indexing
-- `src/rag_chain.py`: History-aware retrieval and conversational RAG chain
-- `app.py`: Streamlit user interface and session management
-- `requirements.txt`: Project dependencies
+
+```
+.
+├── app.py                  Main Streamlit application
+├── src/
+│   ├── __init__.py
+│   ├── pdf_loader.py       PDF text extraction
+│   ├── vectorstore.py      Document chunking and FAISS indexing
+│   └── rag_chain.py        RAG chain with provider routing
+├── requirements.txt        Python dependencies
+├── .env.example            Environment variable template
+└── README.md
+```
+
+---
+
+## Setup
+
+### Prerequisites
+
+- Python 3.10 or higher
+- A Groq API key (`gsk_...`) or OpenAI API key (`sk-...`)
+
+### Installation
+
+```bash
+git clone https://github.com/your-username/documind.git
+cd documind
+
+python -m venv venv
+source venv/bin/activate
+
+pip install -r requirements.txt
+```
+
+### Environment Variables (Optional)
+
+Copy `.env.example` to `.env` and fill in your key. The app also accepts the key directly through the sign-in form.
+
+```bash
+cp .env.example .env
+```
+
+```env
+GROQ_API_KEY=gsk_your_groq_api_key_here
+OPENAI_API_KEY=sk-your_openai_api_key_here
+```
+
+### Run
+
+```bash
+streamlit run app.py
+```
+
+The application will be available at `http://localhost:8501`.
+
+---
+
+## Usage
+
+1. Open the application in your browser
+2. Click **Launch Workspace** on the landing page
+3. Enter your email and API key, then click **Sign In**
+4. Upload one or more PDF files in the sidebar
+5. Optionally select a model (Groq keys show a model selector)
+6. Click **Index Documents** to extract and embed document content
+7. Switch to the **Conversation** tab and ask questions
+8. Expand **Source References** under any response to see attributed chunks
+9. Switch to the **Chunk Analytics** tab to inspect index distribution
+
+---
 
 ## Tech Stack
-- **Framework**: LangChain
-- **LLM & Embeddings**: OpenAI (`gpt-4o-mini`, `text-embedding-3-small`)
-- **Vector DB**: FAISS (CPU)
-- **UI**: Streamlit
-- **Parsing**: PyPDF
+
+| Component | Technology |
+|-----------|-----------|
+| UI Framework | Streamlit |
+| LLM Orchestration | LangChain |
+| LLM Providers | OpenAI, Groq |
+| Embeddings | sentence-transformers (all-MiniLM-L6-v2) |
+| Vector Store | FAISS (CPU) |
+| PDF Parsing | pypdf |
+| Visualization | Altair |
+| Data Processing | pandas |
+
+---
+
+## Development Notes
+
+- Embeddings are computed locally on CPU and do not require any API quota
+- The FAISS index is stored in memory per session and must be rebuilt on restart
+- Chat history is maintained in Streamlit session state
+- All session data is cleared on sign-out or page refresh
+
+---
+
+## License
+
+MIT
