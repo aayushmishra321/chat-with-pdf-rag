@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import os
 import time
 import pandas as pd
@@ -22,7 +23,7 @@ st.set_page_config(
     page_title="DocuMind — PDF Intelligence",
     page_icon=None,
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 CRIMSON     = "#8B2626"
@@ -33,15 +34,17 @@ ORANGE      = "#EF6905"
 ORANGE_DARK = "#C25302"
 GREEN       = "#486C2F"
 
-BG          = "#191410"
-BG2         = "#201B14"
-BG3         = "#271F16"
-BORDER      = "#2E2519"
-BORDER2     = "#3A2F22"
-T1          = "#F5ECD7"
-T2          = "#B09A7E"
-T3          = "#7A6855"
-T4          = "#4F4032"
+BG          = "#FAF9F6"
+BG2         = "#FFFFFF"
+BG3         = "#F2EFE9"
+BORDER      = "rgba(0, 0, 0, 0.06)"
+BORDER2     = "rgba(0, 0, 0, 0.12)"
+T1          = "#1A1A1A"
+T2          = "#333333"
+T3          = "#666666"
+T4          = "#999999"
+
+BROWN       = "#5C4033"
 
 STYLESHEET = f"""
 <style>
@@ -53,6 +56,7 @@ html, body, [class*="css"] {{
     font-family: 'Inter', -apple-system, sans-serif;
     background-color: {BG};
     color: {T1};
+    scroll-behavior: smooth;
 }}
 
 .stApp {{ background: {BG}; min-height: 100vh; }}
@@ -62,7 +66,12 @@ html, body, [class*="css"] {{
     max-width: 100% !important;
 }}
 
-header[data-testid="stHeader"] {{ display: none !important; }}
+header[data-testid="stHeader"] {{
+    background: transparent !important;
+    z-index: 10000 !important;
+}}
+header[data-testid="stHeader"] [data-testid="stToolbar"] {{ display: none !important; }}
+header[data-testid="stHeader"] .stAppDeployButton {{ display: none !important; }}
 #MainMenu, footer, .stDeployButton {{ display: none !important; visibility: hidden !important; }}
 
 section[data-testid="stSidebar"] {{
@@ -75,6 +84,48 @@ section[data-testid="stSidebar"] > div {{
 }}
 section[data-testid="stSidebar"][aria-expanded="false"] {{
     display: none !important;
+}}
+
+/* Model radio picker */
+[data-testid="stSidebar"] .stRadio > div {{
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}}
+[data-testid="stSidebar"] .stRadio label {{
+    display: flex;
+    align-items: center;
+    padding: 0.45rem 0.65rem;
+    border-radius: 7px;
+    border: 1px solid rgba(0,0,0,0.08);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.78rem !important;
+    color: {T3} !important;
+    background: transparent;
+    font-weight: 400 !important;
+}}
+[data-testid="stSidebar"] .stRadio label:has(input:checked) {{
+    background: rgba(139,38,38,0.05) !important;
+    border-color: {CRIMSON} !important;
+    color: {T1} !important;
+    font-weight: 600 !important;
+}}
+[data-testid="stSidebar"] .stRadio label:hover {{
+    background: rgba(0,0,0,0.03);
+    border-color: rgba(0,0,0,0.15);
+}}
+[data-testid="stSidebar"] .stRadio [data-testid="stMarkdownContainer"] p {{
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.78rem !important;
+}}
+/* Replace default radio circle with a styled dot */
+[data-testid="stSidebar"] .stRadio input[type="radio"] {{
+    accent-color: {CRIMSON};
+    width: 13px;
+    height: 13px;
+    margin-right: 2px;
 }}
 
 .stTabs [data-baseweb="tab-list"] {{
@@ -105,43 +156,44 @@ section[data-testid="stSidebar"][aria-expanded="false"] {{
 
 .stButton > button {{
     font-family: 'Inter', sans-serif;
-    font-size: 0.82rem;
+    font-size: 0.8rem;
     font-weight: 600;
-    letter-spacing: 0.02em;
-    border-radius: 7px;
-    padding: 0.58rem 1.1rem;
-    transition: all 0.18s ease;
+    letter-spacing: 0.03em;
+    border-radius: 6px;
+    padding: 0.52rem 1rem;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
     border: 1px solid {BORDER2};
-    background: {BG3};
+    background: {BG2};
     color: {T2} !important;
     cursor: pointer;
     width: 100%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 }}
 .stButton > button:hover {{
-    border-color: {CRIMSON};
-    color: {T1} !important;
-    background: rgba(139,38,38,0.07);
+    border-color: rgba(139,38,38,0.35);
+    color: {CRIMSON} !important;
+    background: rgba(139,38,38,0.04);
+    box-shadow: none;
 }}
 .stButton > button[kind="primary"],
 .stButton > button[kind="primary"] p,
 .stButton > button[kind="primary"] span,
 .stButton > button[kind="primary"] div {{
-    background: {ORANGE} !important;
-    border-color: {ORANGE} !important;
+    background: {CRIMSON} !important;
+    border-color: {CRIMSON} !important;
     color: #ffffff !important;
     font-weight: 700 !important;
-    opacity: 1 !important;
-    letter-spacing: 0.03em;
-    box-shadow: 0 0 16px rgba(239, 105, 5, 0.4) !important;
-    transition: all 0.2s ease !important;
+    letter-spacing: 0.04em;
+    box-shadow: 0 1px 3px rgba(139,38,38,0.25) !important;
+    transition: background 0.15s ease !important;
 }}
 .stButton > button[kind="primary"]:hover,
 .stButton > button[kind="primary"]:hover p,
 .stButton > button[kind="primary"]:hover span {{
-    background: {ORANGE_DARK} !important;
-    border-color: {ORANGE_DARK} !important;
+    background: {CRIMSON_DARK} !important;
+    border-color: {CRIMSON_DARK} !important;
     color: #ffffff !important;
-    box-shadow: 0 0 22px rgba(239, 105, 5, 0.7) !important;
+    box-shadow: 0 2px 6px rgba(139,38,38,0.3) !important;
 }}
 
 .stTextInput label, .stSelectbox label, .stFileUploader label {{
@@ -234,7 +286,7 @@ section[data-testid="stSidebar"][aria-expanded="false"] {{
 }}
 
 .stChatInput > div {{
-    background: {BG2} !important;
+    background: {BG} !important;
     border: 1px solid {BORDER2} !important;
     border-radius: 10px !important;
     transition: border-color 0.2s;
@@ -243,10 +295,92 @@ section[data-testid="stSidebar"][aria-expanded="false"] {{
     border-color: {CRIMSON} !important;
     box-shadow: 0 0 0 3px rgba(139,38,38,0.08) !important;
 }}
-.stChatInput textarea {{
+.stChatInput textarea, .stChatInput textarea:focus {{
+    background: {BG} !important;
     color: {T1} !important;
     font-family: 'Inter', sans-serif !important;
     font-size: 0.9rem !important;
+    caret-color: {CRIMSON} !important;
+}}
+[data-testid="stChatInputContainer"] {{
+    background: {BG} !important;
+}}
+[data-testid="stChatInputContainer"] > div {{
+    background: {BG} !important;
+    border: 1px solid {BORDER2} !important;
+    border-radius: 10px !important;
+}}
+
+/* ── Chat Input Bar ── */
+section[data-testid="stBottom"] {{
+    background: {BG} !important;
+    border-top: 1px solid {BORDER} !important;
+    padding: 0.75rem 1rem !important;
+}}
+section[data-testid="stBottom"] > div {{
+    background: {BG} !important;
+}}
+[data-testid="stChatInputContainer"] {{
+    background: {BG2} !important;
+    border: 1.5px solid {BORDER2} !important;
+    border-radius: 14px !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06) !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
+    padding: 0.25rem 0.5rem !important;
+}}
+[data-testid="stChatInputContainer"]:focus-within {{
+    border-color: {CRIMSON} !important;
+    box-shadow: 0 2px 16px rgba(139,38,38,0.1) !important;
+}}
+[data-testid="stChatInputContainer"] > div {{
+    background: {BG2} !important;
+    border: none !important;
+    border-radius: 14px !important;
+}}
+.stChatInput > div {{
+    background: {BG2} !important;
+    border: none !important;
+    border-radius: 14px !important;
+}}
+.stChatInput > div:focus-within {{
+    border: none !important;
+    box-shadow: none !important;
+}}
+.stChatInput textarea, .stChatInput textarea:focus {{
+    background: {BG2} !important;
+    color: {T1} !important;
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.92rem !important;
+    caret-color: {CRIMSON} !important;
+    border: none !important;
+    outline: none !important;
+}}
+.stChatInput textarea::placeholder {{
+    color: {T4} !important;
+    font-style: italic !important;
+}}
+/* Send button */
+[data-testid="stChatInputSubmitButton"] button {{
+    background: {CRIMSON} !important;
+    border: none !important;
+    border-radius: 9px !important;
+    width: 36px !important;
+    height: 36px !important;
+    color: #fff !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: background 0.18s !important;
+    cursor: pointer !important;
+}}
+[data-testid="stChatInputSubmitButton"] button:hover {{
+    background: {CRIMSON_DARK} !important;
+}}
+[data-testid="stChatInputSubmitButton"] button svg {{
+    fill: #fff !important;
+    stroke: #fff !important;
+    width: 18px !important;
+    height: 18px !important;
 }}
 
 .stExpander {{
@@ -286,16 +420,17 @@ div[data-testid="stMarkdownContainer"] p {{
 .dm-nav {{
     position: fixed;
     top: 0; left: 0; right: 0;
-    height: 62px;
-    background: rgba(25,20,16,0.92);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
+    height: 64px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid {BORDER2};
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 2.5rem;
+    padding: 0 3rem;
     z-index: 9999;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
 }}
 .dm-nav-left {{
     display: flex;
@@ -317,18 +452,18 @@ div[data-testid="stMarkdownContainer"] p {{
     align-items: center;
     gap: 0;
 }}
-.dm-nav-link {{
-    font-family: 'Inter', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: {T3};
+.dm-nav-link, .dm-nav-link:link, .dm-nav-link:visited {{
+    font-family: 'Inter', sans-serif !important;
+    font-size: 0.82rem !important;
+    font-weight: 500 !important;
+    color: {T3} !important;
     padding: 0.4rem 0.85rem;
     border-radius: 5px;
-    cursor: default;
+    cursor: pointer;
     transition: color 0.15s;
-    text-decoration: none;
+    text-decoration: none !important;
 }}
-.dm-nav-link:hover {{ color: {T1}; }}
+.dm-nav-link:hover, .dm-nav-link:active {{ color: {T1} !important; text-decoration: none !important; }}
 .dm-nav-right {{
     display: flex;
     align-items: center;
@@ -339,16 +474,16 @@ div[data-testid="stMarkdownContainer"] p {{
     font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 0.02em;
-    color: {T1};
+    color: #ffffff;
     background: {ORANGE};
     border: none;
     border-radius: 7px;
     padding: 0.48rem 1.2rem;
     cursor: pointer;
     transition: all 0.16s ease;
-    box-shadow: 0 0 10px rgba(239, 105, 5, 0.35);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }}
-.dm-nav-btn:hover {{ background: {ORANGE_DARK}; box-shadow: 0 0 18px rgba(239, 105, 5, 0.65); }}
+.dm-nav-btn:hover {{ background: {ORANGE_DARK}; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12); }}
 .dm-nav-pill {{
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
@@ -363,55 +498,107 @@ div[data-testid="stMarkdownContainer"] p {{
 }}
 
 /* ======================== LANDING ======================== */
-.dm-page {{ padding-top: 62px; }}
+.dm-page {{ padding-top: 64px; }}
 
 .dm-hero {{
-    text-align: center;
-    padding: 7rem 2rem 5.5rem;
-    max-width: 860px;
-    margin: 0 auto;
     position: relative;
+    padding: 9rem 3rem 7rem;
+    max-width: 1100px;
+    margin: 0 auto;
+    overflow: hidden;
+}}
+.dm-hero-accent-line {{
+    width: 56px;
+    height: 3px;
+    background: linear-gradient(90deg, {CRIMSON}, {ORANGE});
+    border-radius: 2px;
+    margin-bottom: 2rem;
 }}
 .dm-hero-kicker {{
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
+    font-size: 0.72rem;
+    font-weight: 600;
     letter-spacing: 0.22em;
     text-transform: uppercase;
     color: {CRIMSON};
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.4rem;
     display: block;
 }}
 .dm-hero-title {{
     font-family: 'Lora', Georgia, serif;
-    font-size: 4.2rem;
+    font-size: 5rem;
     font-weight: 700;
     line-height: 1.1;
     color: {T1};
-    letter-spacing: -0.025em;
-    margin-bottom: 1.6rem;
+    letter-spacing: -0.04em;
+    margin-bottom: 1.8rem;
+    max-width: 760px;
 }}
 .dm-hero-title em {{
     font-style: italic;
-    color: {YELLOW};
-    text-shadow: 0 0 30px rgba(241, 229, 161, 0.45);
+    color: {CRIMSON};
+    background: none;
+    position: relative;
+    display: inline-block;
+}}
+.dm-hero-title em::after {{
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 2px;
+    height: 3px;
+    background: linear-gradient(90deg, {CRIMSON}, {ORANGE});
+    border-radius: 2px;
+    opacity: 0.45;
 }}
 .dm-hero-body {{
-    font-size: 1.08rem;
+    font-size: 1.1rem;
     color: {T2};
     line-height: 1.75;
     max-width: 560px;
-    margin: 0 auto 2.5rem;
+    margin: 0 0 2.5rem 0;
+}}
+.dm-hero-cta-row {{
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    margin-bottom: 4rem;
+}}
+.dm-hero-stat {{
+    display: flex;
+    align-items: flex-end;
+    gap: 0.4rem;
+}}
+.dm-hero-stat-num {{
+    font-family: 'Lora', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: {T1};
+    line-height: 1;
+}}
+.dm-hero-stat-label {{
+    font-size: 0.72rem;
+    color: {T4};
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-bottom: 0.3rem;
+}}
+.dm-hero-stats {{
+    display: flex;
+    gap: 2.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid {BORDER};
 }}
 .dm-hero-tags {{
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    justify-content: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2.5rem;
 }}
 .dm-tag {{
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.66rem;
+    font-size: 0.63rem;
     font-weight: 500;
     letter-spacing: 0.07em;
     text-transform: uppercase;
@@ -419,7 +606,7 @@ div[data-testid="stMarkdownContainer"] p {{
     background: {BG2};
     border: 1px solid {BORDER2};
     border-radius: 100px;
-    padding: 0.26rem 0.8rem;
+    padding: 0.24rem 0.75rem;
 }}
 
 .dm-section {{
@@ -517,7 +704,7 @@ div[data-testid="stMarkdownContainer"] p {{
     font-size: 0.62rem;
     font-weight: 600;
     letter-spacing: 0.12em;
-    color: {YELLOW};
+    color: {ORANGE};
     margin-bottom: 1rem;
     display: block;
 }}
@@ -559,17 +746,17 @@ div[data-testid="stMarkdownContainer"] p {{
     padding: 1.35rem 1.4rem;
 }}
 .dm-tech-name {{
-    font-family: 'Inter', sans-serif;
-    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
-    color: {T1};
-    margin-bottom: 0.22rem;
-    letter-spacing: -0.01em;
+    font-size: 1.1rem;
+    color: {BROWN};
+    margin-bottom: 0.4rem;
 }}
 .dm-tech-desc {{
-    font-size: 0.76rem;
-    color: {T4};
+    font-size: 0.95rem;
+    color: {BROWN};
     line-height: 1.5;
+    opacity: 0.85;
 }}
 
 /* ======================== FOOTER ======================== */
@@ -620,20 +807,22 @@ div[data-testid="stMarkdownContainer"] p {{
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: {T3};
+    color: {BROWN};
     margin-bottom: 1rem;
 }}
 .dm-footer-item {{
     font-size: 0.8rem;
-    color: {T4};
+    color: {BROWN};
+    opacity: 0.85;
     margin-bottom: 0.45rem;
     line-height: 1.5;
 }}
 .dm-footer-item code {{
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.72rem;
-    color: {YELLOW};
-    background: rgba(233,196,106,0.08);
+    font-weight: 600;
+    color: {BROWN};
+    background: rgba(92, 64, 51, 0.08);
     padding: 0.03rem 0.3rem;
     border-radius: 3px;
 }}
@@ -709,7 +898,7 @@ div[data-testid="stMarkdownContainer"] p {{
     position: fixed;
     top: 0; left: 0; right: 0;
     height: 58px;
-    background: rgba(25,20,16,0.95);
+    background: rgba(250, 249, 246, 0.95);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid {BORDER2};
     display: flex;
@@ -849,13 +1038,13 @@ div[data-testid="stMarkdownContainer"] p {{
 /* Analytics */
 .dm-metric-row {{
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 1px;
     background: {BORDER};
     border: 1px solid {BORDER};
     border-radius: 10px;
     overflow: hidden;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
 }}
 .dm-metric {{
     background: {BG2};
@@ -910,6 +1099,12 @@ def init_state():
     for k, v in defaults.items():
         if k not in st.session_state:
             st.session_state[k] = v
+    if (
+        st.session_state.get("selected_model")
+        and st.session_state["selected_model"] not in GROQ_MODEL_OPTIONS
+    ):
+        st.session_state["selected_model"] = GROQ_DEFAULT_MODEL
+        st.session_state["rag_chain"] = None
 
 init_state()
 
@@ -955,14 +1150,37 @@ FOOTER_HTML = f"""
 
 
 if st.session_state.view == "landing":
+    # ── JavaScript scroll injector (works via iframe → window.parent) ──
+    components.html("""
+    <script>
+    (function() {
+        function scrollTo(id) {
+            var el = window.parent.document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        function attachHandlers() {
+            var links = window.parent.document.querySelectorAll('[data-scroll-target]');
+            if (!links.length) { setTimeout(attachHandlers, 200); return; }
+            links.forEach(function(link) {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    scrollTo(this.getAttribute('data-scroll-target'));
+                });
+            });
+        }
+        attachHandlers();
+    })();
+    </script>
+    """, height=0)
+
     st.markdown(f"""
     <nav class="dm-nav">
         <div class="dm-nav-left">
             <span class="dm-logo">Docu<span>Mind</span></span>
             <div class="dm-nav-links">
-                <span class="dm-nav-link">Features</span>
-                <span class="dm-nav-link">How it works</span>
-                <span class="dm-nav-link">Stack</span>
+                <a data-scroll-target="features" href="#" class="dm-nav-link">Features</a>
+                <a data-scroll-target="how-it-works" href="#" class="dm-nav-link">How it works</a>
+                <a data-scroll-target="stack" href="#" class="dm-nav-link">Stack</a>
             </div>
         </div>
         <div class="dm-nav-right">
@@ -972,48 +1190,73 @@ if st.session_state.view == "landing":
     <div class="dm-page">
     """, unsafe_allow_html=True)
 
+    # ── Hero ──
     st.markdown(f"""
     <div class="dm-hero">
+        <div class="dm-hero-accent-line"></div>
         <span class="dm-hero-kicker">PDF Document Intelligence</span>
         <div class="dm-hero-title">
-            Ask anything about<br><em>your documents.</em>
+            Your documents,<br><em>finally answerable.</em>
         </div>
         <div class="dm-hero-body">
-            DocuMind turns static PDFs into a searchable knowledge base. Upload your files,
-            index them locally with open-source embeddings, and get precise answers in plain
-            language — every response tied to the exact source page.
+            DocuMind transforms static PDFs into a searchable knowledge base.
+            Ask any question in plain English and get precise answers,
+            every one cited to the exact source page.
         </div>
         <div class="dm-hero-tags">
-            <span class="dm-tag">Local Embeddings</span>
-            <span class="dm-tag">Source Citations</span>
-            <span class="dm-tag">Multi-PDF</span>
-            <span class="dm-tag">Groq &amp; OpenAI</span>
-            <span class="dm-tag">Conversation Memory</span>
-            <span class="dm-tag">Chunk Analytics</span>
+            <span class="dm-tag">&#x2714;&nbsp; Local Embeddings</span>
+            <span class="dm-tag">&#x2714;&nbsp; Source Citations</span>
+            <span class="dm-tag">&#x2714;&nbsp; Multi-PDF</span>
+            <span class="dm-tag">&#x2714;&nbsp; Groq &amp; OpenAI</span>
+            <span class="dm-tag">&#x2714;&nbsp; Conversation Memory</span>
+            <span class="dm-tag">&#x2714;&nbsp; Chunk Analytics</span>
         </div>
     </div>
     """, unsafe_allow_html=True)
 
-    _, c, _ = st.columns([2.2, 1, 2.2])
+    _, c, _ = st.columns([2.5, 1, 2.5])
     with c:
-        if st.button("Open Workspace", type="primary", use_container_width=True):
+        if st.button("Open Workspace →", type="primary", use_container_width=True):
             st.session_state.view = "auth"
             st.rerun()
 
-    st.markdown('<hr class="dm-divider">', unsafe_allow_html=True)
+    st.markdown("""
+    <div style="max-width:1100px;margin:0 auto;padding:2.5rem 3rem 0;">
+        <div style="display:flex;gap:3.5rem;padding-top:2.5rem;border-top:1px solid rgba(0,0,0,0.06);">
+            <div>
+                <div style="font-family:'Lora',serif;font-size:2.4rem;font-weight:700;color:#1A1A1A;line-height:1;">100%</div>
+                <div style="font-size:0.7rem;color:#999;font-family:'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;margin-top:0.3rem;">Local Embeddings</div>
+            </div>
+            <div>
+                <div style="font-family:'Lora',serif;font-size:2.4rem;font-weight:700;color:#1A1A1A;line-height:1;">0</div>
+                <div style="font-size:0.7rem;color:#999;font-family:'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;margin-top:0.3rem;">Data Sent to Cloud</div>
+            </div>
+            <div>
+                <div style="font-family:'Lora',serif;font-size:2.4rem;font-weight:700;color:#1A1A1A;line-height:1;">6+</div>
+                <div style="font-size:0.7rem;color:#999;font-family:'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;margin-top:0.3rem;">LLM Models</div>
+            </div>
+            <div>
+                <div style="font-family:'Lora',serif;font-size:2.4rem;font-weight:700;color:#1A1A1A;line-height:1;">&infin;</div>
+                <div style="font-size:0.7rem;color:#999;font-family:'Inter',sans-serif;letter-spacing:0.08em;text-transform:uppercase;margin-top:0.3rem;">PDFs Supported</div>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown('<hr class="dm-divider" style="margin-top:3rem;">', unsafe_allow_html=True)
 
     st.markdown(f"""
-    <div class="dm-section">
+    <div class="dm-section" id="how-it-works">
         <div class="dm-section-label">How it works</div>
         <div class="dm-section-title">Four steps from PDF to answer.</div>
         <div class="dm-section-sub">
-            The entire pipeline runs on your machine. No document content ever leaves your device — only inference calls go to the LLM.
+            The entire pipeline runs on your machine. No document content ever leaves your device &mdash; only inference calls go to the LLM.
         </div>
         <div class="dm-steps">
             <div class="dm-step">
                 <div class="dm-step-num">1</div>
                 <div class="dm-step-title">Upload PDFs</div>
-                <div class="dm-step-body">Drag one or several PDF files into the sidebar. Any file size, any layout — scanned or digital.</div>
+                <div class="dm-step-body">Drag one or several PDF files into the sidebar. Any file size, any layout &mdash; scanned or digital.</div>
             </div>
             <div class="dm-step">
                 <div class="dm-step-num">2</div>
@@ -1035,7 +1278,7 @@ if st.session_state.view == "landing":
 
     <hr class="dm-divider">
 
-    <div class="dm-section">
+    <div class="dm-section" id="features">
         <div class="dm-section-label">Features</div>
         <div class="dm-section-title">Built for precision, not guessing.</div>
         <div class="dm-section-sub">
@@ -1077,7 +1320,7 @@ if st.session_state.view == "landing":
 
     <hr class="dm-divider">
 
-    <div class="dm-section">
+    <div class="dm-section" id="stack">
         <div class="dm-section-label">Technology Stack</div>
         <div class="dm-section-title">Production-grade components.</div>
         <div class="dm-section-sub">
@@ -1090,7 +1333,7 @@ if st.session_state.view == "landing":
             </div>
             <div class="dm-tech-cell">
                 <div class="dm-tech-name">FAISS</div>
-                <div class="dm-tech-desc">Facebook AI Similarity Search — local vector index with no external database required</div>
+                <div class="dm-tech-desc">Facebook AI Similarity Search &mdash; local vector index with no external database required</div>
             </div>
             <div class="dm-tech-cell">
                 <div class="dm-tech-name">HuggingFace</div>
@@ -1098,7 +1341,7 @@ if st.session_state.view == "landing":
             </div>
             <div class="dm-tech-cell">
                 <div class="dm-tech-name">Groq / OpenAI</div>
-                <div class="dm-tech-desc">LLM inference via user-supplied API key — Groq for speed, OpenAI for coverage</div>
+                <div class="dm-tech-desc">LLM inference via user-supplied API key &mdash; Groq for speed, OpenAI for coverage</div>
             </div>
         </div>
     </div>
@@ -1222,20 +1465,32 @@ elif st.session_state.view == "workspace":
         st.markdown('<hr class="sb-rule"><span class="sb-lbl">Model</span>', unsafe_allow_html=True)
 
         if is_groq:
-            display_labels = [GROQ_MODEL_LABELS.get(m, m) for m in GROQ_MODEL_OPTIONS]
             current_model  = st.session_state.selected_model or GROQ_DEFAULT_MODEL
+            display_labels = [GROQ_MODEL_LABELS.get(m, m) for m in GROQ_MODEL_OPTIONS]
             current_idx    = (
                 GROQ_MODEL_OPTIONS.index(current_model)
                 if current_model in GROQ_MODEL_OPTIONS else 0
             )
-            chosen_label = st.selectbox(
-                "Model",
+
+            chosen_label = st.radio(
+                "model_radio",
                 options=display_labels,
                 index=current_idx,
                 label_visibility="collapsed",
+                key="model_radio_widget",
             )
             chosen_model = GROQ_MODEL_OPTIONS[display_labels.index(chosen_label)]
-            st.session_state.selected_model = chosen_model
+
+            if st.session_state.selected_model != chosen_model:
+                st.session_state.selected_model = chosen_model
+                if st.session_state.get("vectorstore"):
+                    st.session_state.rag_chain = build_rag_chain(
+                        st.session_state.vectorstore,
+                        st.session_state.api_key,
+                        model_override=chosen_model,
+                    )
+                st.rerun()
+
             st.markdown('<div class="dm-model-badge">Groq Inference</div>', unsafe_allow_html=True)
         else:
             st.markdown(
@@ -1260,6 +1515,8 @@ elif st.session_state.view == "workspace":
                         else:
                             chunks      = split_documents(docs)
                             vectorstore = create_vector_store(chunks, st.session_state.api_key)
+                            
+                            st.session_state.vectorstore = vectorstore
                             st.session_state.rag_chain = build_rag_chain(
                                 vectorstore,
                                 st.session_state.api_key,
@@ -1269,7 +1526,11 @@ elif st.session_state.view == "workspace":
                                 {
                                     "ID":       f"C{i:04d}",
                                     "Sequence": i,
-                                    "Document": c.metadata.get("source", "document"),
+                                    "Document": os.path.basename(
+                                        c.metadata.get("source", "document.pdf")
+                                    ).split("_")[0] if len(
+                                        os.path.basename(c.metadata.get("source", ""))
+                                    ) > 40 else os.path.basename(c.metadata.get("source", "document.pdf")),
                                     "Page":     c.metadata.get("page", 1),
                                     "Length":   len(c.page_content),
                                     "Preview":  c.page_content[:120] + "...",
@@ -1288,7 +1549,15 @@ elif st.session_state.view == "workspace":
                             st.success(f"{len(chunks)} chunks indexed in {elapsed:.1f}s")
                             st.rerun()
                     except Exception as exc:
-                        st.error(f"Indexing failed: {exc}")
+                        err = str(exc)
+                        if "401" in err or "invalid_api_key" in err:
+                            st.error("Invalid API Key. The key you entered was rejected. Sign out and try again with a valid key.")
+                        elif "model_decommissioned" in err or "decommissioned" in err:
+                            st.error("The selected model has been decommissioned. Choose a different model in the sidebar dropdown.")
+                        elif "model_not_found" in err or ("404" in err and "model" in err):
+                            st.error("Model not found or not available on your Groq plan. Select Gemma 2 9B from the model dropdown and try again.")
+                        else:
+                            st.error(f"Indexing failed: {exc}")
 
         st.markdown('<hr class="sb-rule"><span class="sb-lbl">Session</span>', unsafe_allow_html=True)
 
@@ -1298,6 +1567,7 @@ elif st.session_state.view == "workspace":
 
         if st.button("Reset Index", use_container_width=True):
             st.session_state.rag_chain     = None
+            st.session_state.vectorstore   = None
             st.session_state.chunk_records = []
             st.session_state.doc_count     = 0
             st.session_state.index_stats   = {}
@@ -1351,6 +1621,14 @@ elif st.session_state.view == "workspace":
                                 "chat_history": st.session_state.chat_history[:-1],
                             })
                             answer = result["answer"]
+                            # Strip all reasoning/thinking blocks from models like Qwen3
+                            import re
+                            answer = re.sub(r"<think>.*?</think>\s*", "", answer, flags=re.DOTALL)
+                            answer = re.sub(r"<draft>.*?</draft>\s*", "", answer, flags=re.DOTALL)
+                            # Strip any orphaned opening/closing tags
+                            answer = re.sub(r"</?think>|</?draft>", "", answer)
+                            answer = answer.strip()
+                            
                             st.markdown(answer)
 
                             ctx = result.get("context", [])
@@ -1368,14 +1646,33 @@ elif st.session_state.view == "workspace":
 
                             st.session_state.chat_history.append(AIMessage(content=answer))
                         except Exception as exc:
-                            st.error(f"Query failed: {exc}")
+                            err = str(exc)
+                            if "401" in err or "invalid_api_key" in err:
+                                st.error("Invalid API Key. Click Sign Out in the sidebar and sign in again with a valid key.")
+                            elif "model_decommissioned" in err or "decommissioned" in err:
+                                st.error("The selected model has been decommissioned. Choose a different model in the sidebar.")
+                            elif "model_not_found" in err or ("404" in err and "model" in err):
+                                st.error("Model not found or not available on your Groq plan. Select a different model in the sidebar (Gemma 2 9B is recommended).")
+                            elif "429" in err or "rate_limit" in err:
+                                st.error("Rate limit reached. Please wait a moment and try again.")
+                            elif "context_length" in err or "context window" in err:
+                                st.error("Your question plus the retrieved context exceeded the model token limit. Try a shorter question.")
+                            else:
+                                st.error(f"Query failed: {exc}")
 
     with tab_analytics:
         if not st.session_state.chunk_records:
-            st.info("No data yet. Index documents to see analytics.")
+            st.markdown(f"""
+            <div class="dm-empty-card">
+                <div class="dm-empty-title">No index data yet</div>
+                <div class="dm-empty-body">Upload one or more PDFs in the sidebar and click Index Documents. The analytics dashboard will appear here with chunk distribution charts, page density maps, and a full chunk inspector table.</div>
+            </div>
+            """, unsafe_allow_html=True)
         else:
             df    = pd.DataFrame(st.session_state.chunk_records)
             stats = st.session_state.index_stats
+            elapsed_s = stats.get('elapsed', 0)
+            elapsed_lbl = f"{elapsed_s:.1f}s" if elapsed_s < 60 else f"{elapsed_s/60:.1f}m"
 
             st.markdown(f"""
             <div class="dm-metric-row">
@@ -1395,6 +1692,10 @@ elif st.session_state.view == "workspace":
                     <div class="dm-metric-num">{df['Page'].nunique()}</div>
                     <div class="dm-metric-lbl">Unique Pages</div>
                 </div>
+                <div class="dm-metric">
+                    <div class="dm-metric-num">{elapsed_lbl}</div>
+                    <div class="dm-metric-lbl">Index Time</div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -1402,32 +1703,37 @@ elif st.session_state.view == "workspace":
                 Chunks=("ID", "count"),
                 Pages=("Page", "nunique"),
                 Avg_Length=("Length", "mean"),
+                Total_Chars=("Length", "sum"),
             ).reset_index()
             doc_agg["Avg_Length"] = doc_agg["Avg_Length"].round(0).astype(int)
 
             chart_cfg = dict(
                 background=BG2,
                 axis=alt.AxisConfig(
-                    labelColor=T3, titleColor=T3, gridColor=BORDER,
+                    labelColor=T2, titleColor=T3, gridColor="rgba(0,0,0,0.05)",
                     domainColor=BORDER2, tickColor=BORDER2,
                     labelFont="Inter", titleFont="Inter",
+                    labelFontSize=11, titleFontSize=11,
                 ),
                 legend=alt.LegendConfig(
-                    labelColor=T2, titleColor=T3,
+                    labelColor=T2, titleColor=T2,
                     labelFont="Inter", titleFont="Inter",
+                    labelFontSize=11, titleFontSize=11,
                 ),
-                title=alt.TitleConfig(color=T3, font="Inter", fontSize=11, fontWeight=600),
+                title=alt.TitleConfig(color=T1, font="Inter", fontSize=12, fontWeight=600),
                 view=alt.ViewConfig(strokeWidth=0),
+                padding={"left": 12, "right": 12, "top": 16, "bottom": 12},
             )
-            palette = [CRIMSON, YELLOW, ORANGE, CRIMSON_DARK, "#A8DADC", "#C77DFF", "#E8C4A0"]
+            palette = [CRIMSON, ORANGE, "#486C2F", CRIMSON_DARK, "#6B4F3A", "#C77DFF", "#E8C4A0"]
 
             st.markdown('<div class="dm-chart-lbl">Chunks per Document</div>', unsafe_allow_html=True)
+            st.caption("How many text chunks each PDF contributed to the index. Higher chunk counts indicate longer or denser documents.")
             bar = (
                 alt.Chart(doc_agg)
                 .mark_bar(cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
                 .encode(
                     x=alt.X("Document:N", sort="-y", title=None,
-                            axis=alt.Axis(labelAngle=-20, labelLimit=140)),
+                            axis=alt.Axis(labelAngle=-25, labelLimit=180)),
                     y=alt.Y("Chunks:Q", title="Chunk count"),
                     color=alt.Color("Document:N",
                                     scale=alt.Scale(range=palette), legend=None),
@@ -1435,21 +1741,23 @@ elif st.session_state.view == "workspace":
                         alt.Tooltip("Document:N", title="Document"),
                         alt.Tooltip("Chunks:Q", title="Chunks"),
                         alt.Tooltip("Pages:Q", title="Pages"),
-                        alt.Tooltip("Avg_Length:Q", title="Avg Length (chars)"),
+                        alt.Tooltip("Avg_Length:Q", title="Avg Chars/Chunk"),
+                        alt.Tooltip("Total_Chars:Q", title="Total Characters"),
                     ],
                 )
-                .properties(height=240)
+                .properties(height=260)
                 .configure(**chart_cfg)
             )
             st.altair_chart(bar, use_container_width=True)
 
             st.markdown('<div class="dm-chart-lbl">Chunk Length Distribution</div>', unsafe_allow_html=True)
+            st.caption("Distribution of character lengths across all chunks. Ideally chunks cluster between 400–800 characters — short chunks miss context, long chunks dilute relevance.")
             c1, c2 = st.columns(2)
 
             with c1:
                 hist = (
                     alt.Chart(df)
-                    .mark_bar(cornerRadiusTopLeft=3, cornerRadiusTopRight=3, opacity=0.9)
+                    .mark_bar(cornerRadiusTopLeft=3, cornerRadiusTopRight=3, opacity=0.85)
                     .encode(
                         x=alt.X("Length:Q", bin=alt.Bin(maxbins=28), title="Character Length"),
                         y=alt.Y("count():Q", title="Chunk Count"),
@@ -1459,7 +1767,7 @@ elif st.session_state.view == "workspace":
                             alt.Tooltip("count():Q", title="Count"),
                         ],
                     )
-                    .properties(height=240, title="Histogram")
+                    .properties(height=260, title="Length Histogram")
                     .configure(**chart_cfg)
                 )
                 st.altair_chart(hist, use_container_width=True)
@@ -1468,7 +1776,7 @@ elif st.session_state.view == "workspace":
                 df["LenBucket"] = pd.cut(
                     df["Length"],
                     bins=[0, 200, 400, 600, 800, 1200, 99999],
-                    labels=["< 200", "200-400", "400-600", "600-800", "800-1200", "> 1200"],
+                    labels=["< 200", "200–400", "400–600", "600–800", "800–1200", "> 1200"],
                 )
                 bucket_agg = df.groupby("LenBucket", observed=True).size().reset_index(name="Count")
                 donut = (
@@ -1479,21 +1787,25 @@ elif st.session_state.view == "workspace":
                         color=alt.Color(
                             "LenBucket:N",
                             scale=alt.Scale(range=palette),
-                            legend=alt.Legend(title="Length Range"),
+                            legend=alt.Legend(title="Length Range", orient="right"),
                         ),
-                        tooltip=["LenBucket:N", "Count:Q"],
+                        tooltip=[
+                            alt.Tooltip("LenBucket:N", title="Range"),
+                            alt.Tooltip("Count:Q", title="Chunks"),
+                        ],
                     )
-                    .properties(height=240, title="Length Buckets")
+                    .properties(height=260, title="Chunk Size Breakdown")
                     .configure(**chart_cfg)
                 )
                 st.altair_chart(donut, use_container_width=True)
 
             st.markdown('<div class="dm-chart-lbl">Sequence vs. Chunk Length</div>', unsafe_allow_html=True)
+            st.caption("Each point is one chunk plotted by its position in the document (x) and its character length (y). Gaps or abrupt length drops can indicate page breaks, headings, or sparsely-written sections.")
             scatter = (
                 alt.Chart(df)
-                .mark_circle(opacity=0.75, size=48)
+                .mark_circle(opacity=0.72, size=52)
                 .encode(
-                    x=alt.X("Sequence:Q", title="Chunk Sequence",
+                    x=alt.X("Sequence:Q", title="Chunk Position in Document",
                             scale=alt.Scale(zero=False)),
                     y=alt.Y("Length:Q", title="Character Length",
                             scale=alt.Scale(zero=False)),
@@ -1505,14 +1817,21 @@ elif st.session_state.view == "workspace":
                             direction="horizontal",
                         ),
                     ),
-                    tooltip=["ID:N", "Document:N", "Page:Q", "Length:Q"],
+                    tooltip=[
+                        alt.Tooltip("ID:N", title="Chunk ID"),
+                        alt.Tooltip("Document:N", title="Document"),
+                        alt.Tooltip("Page:Q", title="Page"),
+                        alt.Tooltip("Length:Q", title="Characters"),
+                        alt.Tooltip("Preview:N", title="Preview"),
+                    ],
                 )
-                .properties(height=270, title="Chunk Sequence vs. Length")
+                .properties(height=280, title="Chunk Position vs. Length")
                 .configure(**chart_cfg)
             )
             st.altair_chart(scatter, use_container_width=True)
 
             st.markdown('<div class="dm-chart-lbl">Page-Level Chunk Density</div>', unsafe_allow_html=True)
+            st.caption("A heatmap showing how many chunks were extracted from each page of each document. Dark cells indicate content-heavy pages; light cells indicate sparse or image-heavy pages.")
             page_df = df.groupby(["Document", "Page"]).agg(Chunks=("ID", "count")).reset_index()
             heatmap = (
                 alt.Chart(page_df)
@@ -1524,25 +1843,37 @@ elif st.session_state.view == "workspace":
                         "Chunks:Q",
                         scale=alt.Scale(range=[BG3, CRIMSON],
                                         domain=[0, page_df["Chunks"].max()]),
-                        legend=alt.Legend(title="Chunks"),
+                        legend=alt.Legend(title="Chunks / Page"),
                     ),
-                    tooltip=["Document:N", "Page:O", "Chunks:Q"],
+                    tooltip=[
+                        alt.Tooltip("Document:N", title="Document"),
+                        alt.Tooltip("Page:O", title="Page"),
+                        alt.Tooltip("Chunks:Q", title="Chunks on page"),
+                    ],
                 )
                 .properties(
-                    height=max(90, 52 * df["Document"].nunique()),
-                    title="Chunks per Page",
+                    height=max(100, 56 * df["Document"].nunique()),
+                    title="Chunk Density by Page",
                 )
                 .configure(**chart_cfg)
             )
             st.altair_chart(heatmap, use_container_width=True)
 
             st.markdown('<div class="dm-chart-lbl">Chunk Inspector</div>', unsafe_allow_html=True)
+            st.caption("Full table of every indexed chunk. Use this to verify text extraction quality and spot chunks that are too short (truncated) or too long (missed a split).")
             st.dataframe(
                 df[["ID", "Document", "Page", "Length", "Preview"]].rename(
-                    columns={"Length": "Chars"}
+                    columns={"Length": "Chars", "Preview": "Text Preview"}
                 ),
                 use_container_width=True,
                 hide_index=True,
+                column_config={
+                    "ID":          st.column_config.TextColumn("ID", width="small"),
+                    "Document":    st.column_config.TextColumn("Document", width="medium"),
+                    "Page":        st.column_config.NumberColumn("Page", width="small"),
+                    "Chars":       st.column_config.NumberColumn("Chars", width="small", help="Number of characters in this chunk"),
+                    "Text Preview":st.column_config.TextColumn("Text Preview", width="large"),
+                },
             )
 
     st.markdown("</div>", unsafe_allow_html=True)

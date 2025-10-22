@@ -1,4 +1,4 @@
 {
-  "python.defaultInterpreterPath": "${workspaceFolder}/venv/bin/python",
-  "python.analysis.extraPaths": ["${workspaceFolder}/venv/lib/python3.11/site-packages"]
+  "python.defaultInterpreterPath": "${workspaceFolder}/chat-with-pdf-rag/venv/bin/python",
+  "python.analysis.extraPaths": ["${workspaceFolder}/chat-with-pdf-rag/venv/lib/python3.13/site-packages"]
 }
