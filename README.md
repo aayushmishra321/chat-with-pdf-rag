@@ -166,7 +166,3 @@ The application will be available at `http://localhost:8501`.
 - All session data is cleared on sign-out or page refresh
 
 ---
-
-## License
-
-MIT
